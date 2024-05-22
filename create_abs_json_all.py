@@ -70,7 +70,7 @@ for json_filename in Path("JSON").rglob("*.json"):
     abs_metadata_json["title"] = json_output["ProductTitle"]
     abs_metadata_json["subtitle"] = None
     abs_metadata_json["authors"] = json_output["Writers"]
-    abs_metadata_json["narrators"] = json_output["StarringActors"]
+    abs_metadata_json["narrators"] = [actor_info["Actor"] for actor_info in json_output["CastMembers"]]
     abs_metadata_json["series"] = [series_name_and_number]
     abs_metadata_json["genres"] = ["Audio Drama"]
     abs_metadata_json["publishedYear"] = json_output["ReleaseDate"].split(" ")[-1]
@@ -79,7 +79,7 @@ for json_filename in Path("JSON").rglob("*.json"):
     abs_metadata_json["description"] = json_output["Description"].replace("\n", "\n\n")
     abs_metadata_json["isbn"] = isbn
     abs_metadata_json["asin"] = None
-    abs_metadata_json["language"] = None
+    abs_metadata_json["language"] = "Eng"
     abs_metadata_json["explicit"] = False
     abs_metadata_json["abridged"] = False
 
