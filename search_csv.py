@@ -28,6 +28,7 @@ def search_csv(search_term):
         "DrWhoAudiobooks.csv",
         sep=",",
         names=["SeriesTitle", "ProductTitle", "ReleaseDate", "FileName"],
+        encoding='utf-8'  # Ensure the CSV is read with UTF-8 encoding
     )
 
     search_result = df.loc[df["ProductTitle"] == search_term]
@@ -36,13 +37,12 @@ def search_csv(search_term):
 
 
 def search_csv_reader(search_term):
-    with open("DrWhoAudiobooks.csv") as csv_file:
+    with open("DrWhoAudiobooks.csv", mode='r', encoding='utf-8') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=",")
 
         for row in csv_reader:
             if search_term.upper() in row[1].upper():
                 print(row)
-
                 return row
 
 
