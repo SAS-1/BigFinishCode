@@ -45,4 +45,4 @@ python search_csv.py
 - [ ] Create Docker/Linux version
 - [ ] Migrate script to PowerShell
 - [ ] Improve moving files and renaming. 
-- [ ] Improve Series name generation into more logical format. 
+- [X] Improve Series name generation into more logical format. 
