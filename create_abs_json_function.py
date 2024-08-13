@@ -41,7 +41,7 @@ if not os.path.exists("ABS_JSON"):
 
 # Define a mapping for series title transformations
 series_mapping = {
-"Class": "Class (CL)",
+    "Class": "Class (CL)",
     "Counter-Measures": "Counter Measures (CM)",
     "Cyberman": "Cyberman (CY)",
     "Doctor Who - The Monthly Adventures": "D0. Dr Who - Main Range (MR)",
@@ -95,7 +95,7 @@ series_mapping = {
     "UNIT": "UNIT (UNIT)",
     "UNIT - The New Series": "UNIT - The New Series (UNITNS)",
     "Iris Wildthyme": "F4. Iris Wildthyme (IW)",
-    "Iris Wildthyme and Friends":"F5. Iris Wildthyme & Friends (IWF)",
+    "Iris Wildthyme and Friends": "F5. Iris Wildthyme & Friends (IWF)",
     "Graceless": "F6. Graceless",
     "Doctor Who - Unbound": "Unbound (UN)",
     "Vienna": "F7. Vienna",
@@ -140,30 +140,26 @@ def func_create_abs_json(json_filename, overwrite_json=False):
 
     modified_series_name_and_number = f"{modified_series_title} #{series_number}"
 
-    isbn = None
+    # Directly use the ISBN from json_output if available
+    isbn = json_output.get("ISBN", None)
 
-    for i in json_output["ProductionCredits"]:
-        if "DigitalRetailISBN" in i:
-            isbn = i["DigitalRetailISBN"]
-
-    abs_metadata_json = {}
-
-    abs_metadata_json["title"] = json_output["ProductTitle"]
-    abs_metadata_json["subtitle"] = None
-    abs_metadata_json["authors"] = json_output["Writers"]
-    abs_metadata_json["narrators"] = [actor_info["Actor"] for actor_info in json_output["CastMembers"]]
-#    abs_metadata_json["series"] = [series_name_and_number]
-    abs_metadata_json["series"] = [modified_series_name_and_number]
-    abs_metadata_json["genres"] = ["Audio Drama"]
-    abs_metadata_json["publishedYear"] = json_output["ReleaseDate"].split(" ")[-1]
-    abs_metadata_json["publishedDate"] = None
-    abs_metadata_json["publisher"] = "Big Finish"
-    abs_metadata_json["description"] = json_output["Description"].replace("\n", "\n\n")
-    abs_metadata_json["isbn"] = isbn
-    abs_metadata_json["asin"] = None
-    abs_metadata_json["language"] = "Eng"
-    abs_metadata_json["explicit"] = False
-    abs_metadata_json["abridged"] = False
+    abs_metadata_json = {
+        "title": json_output["ProductTitle"],
+        "subtitle": None,
+        "authors": json_output["Writers"],
+        "narrators": [actor_info["Actor"] for actor_info in json_output["CastMembers"]],
+        "series": [modified_series_name_and_number],
+        "genres": ["Audio Drama"],
+        "publishedYear": json_output["ReleaseDate"].split(" ")[-1],
+        "publishedDate": None,
+        "publisher": "Big Finish",
+        "description": json_output["Description"].replace("\n", "\n\n"),
+        "isbn": isbn,
+        "asin": None,
+        "language": "Eng",
+        "explicit": False,
+        "abridged": False
+    }
 
     print("Writing ABS JSON file")
     with open(f"ABS_JSON\\{json_filename.name}", "w", encoding="utf-8") as data_file:
@@ -172,9 +168,3 @@ def func_create_abs_json(json_filename, overwrite_json=False):
             data_file,
             indent=4,
         )
-
-
-# func_create_abs_json(
-#    "JSON\\doctor-who-the-first-doctor-adventures-volume-01-1692.json",
-#    "X:\\Media\\Audiobooks - Doctor Who\\Big Finish Productions\\1. Doctor Who\\1. The Classic Series\\2. The First Doctor Adventures (1DA)\\1. Volume 1",
-# )
