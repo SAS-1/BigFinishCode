@@ -46,7 +46,8 @@ def search_csv_reader(search_term):
                 return row
 
 
-search_path = "X:\\Media\\CompletedTorrents\\8. August"
+#search_path = "X:\\Media\\CompletedTorrents\\8. August"
+search_path = "Z:\\Torrents\\completed\\5. May"
 
 for path in Path(search_path).rglob("*.mp3"):
     print(str(path))

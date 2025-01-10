@@ -93,7 +93,7 @@ series_mapping = {
     "Graceless": "F6. Graceless",
     "Doctor Who - Unbound": "Unbound (UN)",
     "Vienna": "F7. Vienna",
-    "Charlotte Pollard": "F9. Charlotte Pollard",
+    "Charlotte Pollard": "F8. Charlotte Pollard",
     # Add other series transformations as needed
 }
 

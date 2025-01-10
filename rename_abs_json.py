@@ -6,7 +6,8 @@ from pathlib import Path
 import numpy as np
 
 
-search_path = "X:\\Media\\Audiobooks - Doctor Who\\Big Finish Productions\\8. Sherlock Holmes (SH)\\02. Series 02"
+#search_path = "X:\\Media\\Audiobooks - Doctor Who\\Big Finish Productions\\8. Sherlock Holmes (SH)\\02. Series 02"
+search_path = "Z:\\Torrents\\completed\\5. May"
 
 for json_filename in Path(search_path).rglob("*.json"):
     print(str(json_filename))
