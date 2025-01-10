@@ -28,125 +28,136 @@ def scan_item_url(item_url, driver, overwrite_json=False):
 
     soup = BeautifulSoup(driver.page_source, "html.parser")
 
-    # Update the parsing logic based on the new structure
-    product_desc = soup.find("div", attrs={"class": "pdp-right"})
-    if product_desc is None:
-        print("Error: 'pdp-right' div not found.")
-        return
+    product_desc = soup.find("div", attrs={"class": "product-desc"})
+
+    series_title = product_desc.find("h6").text.strip()
+
+    product_title = product_desc.find("h3").text.strip()
+
+    release_date = (
+        product_desc.find(attrs={"class": "release-date"}).text.strip().split("\t")[-1]
+    )
+
+    writers_array = []
 
     try:
-        series_title = product_desc.find("p", attrs={"class": "mt-0 mb-3 last:mb-0 leading-5 text-bf-rich-black-40 text-sm italic"}).text.strip()
-        print(f"Series Title: {series_title}")
-    except AttributeError:
-        print("Error: Series title not found.")
-        series_title = "N/A"
+        writers = product_desc.find_all("p")[0]
+
+        for writer in writers.find_all("a"):
+            print(f'Writer: {writer["title"]}')
+            writers_array.append(writer["title"])
+    except:
+        print("No writers")
+
+    starring_actors_array = []
 
     try:
-        product_title = product_desc.find("p", attrs={"class": "mt-0 mb-3 last:mb-0 leading-tight text-bf-white-ghost text-md font-bold font-apertura"}).text.strip()
-        print(f"Product Title: {product_title}")
-    except AttributeError:
-        print("Error: Product title not found.")
-        product_title = "N/A"
+        starring_actors = product_desc.find_all("p")[1]
 
-    try:
-        release_date_div = product_desc.find("div", attrs={"class": "pdp-released flex items-baseline mb-2"})
-        release_date = release_date_div.find_all("p")[1].text.strip()
-        print(f"Release Date: {release_date}")
-    except (AttributeError, IndexError):
-        print("Error: Release date not found.")
-        release_date = "N/A"
+        for starring_actor in starring_actors.find_all("a"):
+            print(f'Starring: {starring_actor["title"]}')
+            starring_actors_array.append(starring_actor["title"])
+    except:
+        print("No starring actors")
 
-    # Extract writers, cast, and summary from the new structure
-    details_section = soup.find("div", attrs={"class": "pdp-bottom__details px-4 md:px-0 max-w-[736px] ml-auto mr-auto"})
+    tabs_summary = soup.find(id="tabs")
 
-    # Extract summary
-    try:
-        summary_section = details_section.find("div", attrs={"id": "summary-section"})
-        about_tab = summary_section.find("div", attrs={"class": "prose"}).text.strip()
-        print(f"Summary: {about_tab}")
-    except AttributeError:
-        print("Error: Summary not found.")
-        about_tab = "N/A"
+    about_tab = tabs_summary.find(id="tab1").text.strip()
 
-    # Extract cast members specifically from the "Cast" section
+    cast_tab = tabs_summary.find(id="tab5")
+
     cast_member_array = []
-    narrators_array = []
+
     try:
-        cast_section = details_section.find("div", attrs={"id": "cast"})
-        cast_divs = cast_section.find_all("div", attrs={"class": "pdp-cast-section md:flex py-3 border-b-1 border-bf-rich-black-80"})
-        for cast_div in cast_divs:
-            role = cast_div.find("p", attrs={"class": "font-bold md:w-72 mb-3 md:mb-0"}).text.strip()
-            if role == "Cast":
-                cast_list = cast_div.find("ul").find_all("li")
-                for cast_member in cast_list:
-                    actor_tag = cast_member.find("a")
-                    actor = actor_tag.text.strip()
-                    # Clean up any extra whitespace and parentheses in the cast_member text
-                    cleaned_actor = actor.split("(")[0].strip()
-                    narrators_array.append(cleaned_actor)
+        for cast_member in cast_tab.find_all("li"):
+            cast_member = (
+                cast_member.text.strip()
+                .replace("\t", "")
+                .replace("\n", " as ")
+                .replace("(", "")
+                .replace(")", "")
+            )
 
-                    character = cast_member.text.replace(actor, "").strip().strip("() ").strip()
-                    cast_member_dict = {"Role": role, "Actor": cleaned_actor, "Character": character}
-                    print(f"Cast member: {cast_member_dict}")
-                    cast_member_array.append(cast_member_dict)
-    except AttributeError:
-        print("Error: Cast members not found.")
+            cast_member_dict = {}
+            cast_member_dict["Actor"] = cast_member.split(" as ")[0]
+            cast_member_dict["Character"] = cast_member.split(" as ")[-1]
 
+            print(f"Cast member: {cast_member}")
+            cast_member_array.append(cast_member_dict)
+    except:
+        print("No cast members")
 
-    # Extract production credits
+    production_credits_tab = tabs_summary.find(id="tab6")
+
     production_credits_array = []
-    try:
-        for cast_div in cast_divs:
-            role = cast_div.find("p", attrs={"class": "font-bold md:w-72 mb-3 md:mb-0"}).text.strip()
-            if role != "Cast":
-                credits_list = cast_div.find("ul").find_all("li")
-                for credit in credits_list:
-                    person = credit.find("a").text.strip()
-                    production_credits_array.append({role: person})
-                    print(f"Production credit: {role}: {person}")
-    except AttributeError:
-        print("Error: Production credits not found.")
 
-    # Writers are part of production credits under the role "Writer"
-    writers_array = [credit["Writer"] for credit in production_credits_array if "Writer" in credit]
+    for production_credits in production_credits_tab.find_all("li"):
+        details = production_credits.text.strip()
 
-    isbn = ""
-    try:
-        credits_section = details_section.find("div", attrs={"id": "credits"})
-        isbn_p = credits_section.find("p", string=lambda text: text and "Retail ISBN" in text)
-        if isbn_p:
-            isbn = isbn_p.text.split("Retail ISBN:")[-1].strip()
-        print(f"ISBN extracted: {isbn}")
-    except AttributeError:
-        print("Error: ISBN not found.")
+        if len(details) > 1:
+            details = " & ".join(details.split("\n\t"))
 
-    # The rest of the parsing logic remains unchanged
+            details = details.replace(" & ", ": ", 1)
 
-    json_output = {
-        "SeriesTitle": series_title,
-        "ProductTitle": product_title,
-        "ReleaseDate": release_date,
-        "Writers": writers_array,
-        "Description": about_tab,
-        "CastMembers": cast_member_array,
-        "ProductionCredits": production_credits_array,
-        "Narrators": narrators_array,
-        "ISBN": isbn
-    }
+        print(details)
+        production_credits_array.append(details)
+
+    production_credits_parsed_array = []
+
+    for credit in production_credits_array:
+        try:
+            credit_role, credit_persons = credit.split(": ", 2)
+
+            for credit_person in credit_persons.split(" & "):
+                dict = {}
+                dict[credit_role.replace(" by", " By").replace(" ", "")] = credit_person
+                production_credits_parsed_array.append(dict)
+        except:
+            print(f"Encountered issue with text: {credit}")
+
+    # https://www.audiobookshelf.org/docs#book-additional-metadata
+
+    # Details extracted from OPF:
+    # title,
+    # author,
+    # narrator,
+    # publishYear,
+    # publisher,
+    # isbn,
+    # description,
+    # genres,
+    # language,
+    # series,
+    # volumeNumber
+
+    json_output = {}
+
+    json_output["SeriesTitle"] = series_title
+    json_output["ProductTitle"] = product_title
+    json_output["ReleaseDate"] = release_date
+    json_output["Writers"] = writers_array
+    json_output["StarringActors"] = starring_actors_array
+    json_output["Description"] = about_tab
+    json_output["CastMembers"] = cast_member_array
+    json_output["ProductionCredits"] = production_credits_parsed_array
 
     with open(f"JSON\\{item_url.split('/')[-1]}.json", "w", encoding="utf-8") as f:
         json.dump(json_output, f, ensure_ascii=False, indent=4)
 
-    opf_fields = {
-        "title": json_output["ProductTitle"],
-        "author": json_output["Writers"],
-        "narrator": json_output["Narrators"],
-        "publishYear": json_output["ReleaseDate"].split(" ")[-1],
-        "publisher": "Big Finish",
-        "description": json_output["Description"],
-        "series": json_output["SeriesTitle"],
-        "isbn": isbn  # Ensure the ISBN is included here
-    }
+    opf_fields = {}
+
+    opf_fields["title"] = json_output["ProductTitle"]
+    opf_fields["author"] = json_output["Writers"]
+    opf_fields["narrator"] = json_output["StarringActors"]
+    opf_fields["publishYear"] = json_output["ReleaseDate"].split(" ")[-1]
+    opf_fields["publisher"] = "Big Finish"
+
+    for i in json_output["ProductionCredits"]:
+        if "DigitalRetailISBN" in i:
+            opf_fields["isbn"] = i["DigitalRetailISBN"]
+
+    opf_fields["description"] = json_output["Description"]
+    opf_fields["series"] = json_output["SeriesTitle"]
 
     metadata = {"metadata": opf_fields}
 
@@ -161,5 +172,4 @@ def scan_item_url(item_url, driver, overwrite_json=False):
 
     func_create_abs_json(f"JSON\\{item_url.split('/')[-1]}.json", overwrite_json)
 
-  # commented out as new website doesn't seem to let you download easily
-  #   func_download_thumbnail(f"JSON\\{item_url.split('/')[-1]}.json")
+    func_download_thumbnail(f"JSON\\{item_url.split('/')[-1]}.json")
