@@ -116,7 +116,11 @@ for json_filename in Path("JSON").rglob("*.json"):
     if os.path.exists(f"ABS_JSON\\{json_filename.name}"):
         continue
 
+# Extract cast members' characters and split on "/"
     tags = []
+    for actor_info in json_output["CastMembers"]:
+        characters = actor_info["Character"].split("/")
+        tags.extend([char.strip() for char in characters])  # Strip whitespace and add to tags
     chapters = []
 
 #    series_name_and_number = (
@@ -149,6 +153,8 @@ for json_filename in Path("JSON").rglob("*.json"):
     abs_metadata_json["subtitle"] = None
     abs_metadata_json["authors"] = json_output["Writers"]
     abs_metadata_json["narrators"] = [actor_info["Actor"] for actor_info in json_output["CastMembers"]]
+   # abs_metadata_json["tags"] = tags
+    #abs_metadata_json["tags"] = [actor_info["Character"] for actor_info in json_output["CastMembers"]]    
 #    abs_metadata_json["series"] = [series_name_and_number]
     abs_metadata_json["series"] = [modified_series_name_and_number]
     abs_metadata_json["genres"] = ["Audio Drama"]

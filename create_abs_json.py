@@ -105,7 +105,12 @@ def func_create_abs_json(json_filename, folder_path):
         with open(f"JSON\\{json_filename}", "r", encoding="utf-8") as f:
             json_output = json.loads(f.read())
 
+# Extract cast members' characters and split on "/"
     tags = []
+    for actor_info in json_output["CastMembers"]:
+        characters = actor_info["Character"].split("/")
+        tags.extend([char.strip() for char in characters])  # Strip whitespace and add to tags
+
     chapters = []
 
 #    series_name_and_number = (
@@ -136,6 +141,8 @@ def func_create_abs_json(json_filename, folder_path):
     abs_metadata_json["subtitle"] = None
     abs_metadata_json["authors"] = json_output["Writers"]
     abs_metadata_json["narrators"] = [actor_info["Actor"] for actor_info in json_output["CastMembers"]]
+    #abs_metadata_json["tags"] = tags 
+   # abs_metadata_json["tags"] = [actor_info["Character"] for actor_info in json_output["CastMembers"]]    
 #    abs_metadata_json["series"] = [series_name_and_number]
     abs_metadata_json["series"] = [modified_series_name_and_number]
     abs_metadata_json["genres"] = ["Audio Drama"]
